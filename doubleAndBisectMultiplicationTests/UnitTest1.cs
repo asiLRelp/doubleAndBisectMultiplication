@@ -23,7 +23,7 @@ namespace doubleAndBisectMultiplicationTests
         [TestCase(-1, 1)]
         [TestCase(-1, -1)]
         // Testing edge cases
-        [TestCase(Int32.MinValue+1,1)]
+        [TestCase(Int32.MinValue,1)]
         [TestCase(1,Int32.MaxValue)]
         public void Assert_multiplication_gives_correct_result(int x, int y)
         {

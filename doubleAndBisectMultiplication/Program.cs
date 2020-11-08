@@ -11,15 +11,24 @@ namespace doubleAndBisectMultiplication
             Console.Write("Bitte geben Sie zwei ganze Zahlen ein, die multipliziert werden sollen und bestaetigen Sie jeweils mit Enter.\n");
             while (true)
             {
-                Console.Write("Zahl 1: ");
+                Console.Write("\nZahl 1: ");
                 int? a = ReadNumber();
                 if (a == null)
                     return;
-                Console.Write("Zahl 2: ");
+                Console.Write("\nZahl 2: ");
                 int? b = ReadNumber();
                 if (b == null)
                     return;
-                Console.WriteLine("\nDanke!\n\nDas Ergebnis der Multiplikation von {0} und {1} ist {2}\n", a, b, Mul((int)a, (int)b));
+                try
+                {
+                    Console.WriteLine("\nDanke!\n\nDas Ergebnis der Multiplikation von {0} und {1} ist {2}\n", a, b, Mul((int)a, (int)b));
+                }
+                catch
+                {
+                    Console.WriteLine("\nSorry, das Ergebnis ist betragsmaessig zu gross, mein Horizont hoert bei {0} bzw. {1} auf... " +
+                        "\nVersuchen Sie es bitte nochmal mit kleineren Zahlen :-)\n", Int32.MinValue, Int32.MaxValue);
+                    continue;
+                }
                 Console.WriteLine("\n Zum Beenden des Programms geben Sie bitte \"exit\" ein oder druecken Sie Strg+C.\n" +
                     "Um das Programm von vorne zu starten drücken Sie bitte Enter:\n");
                 if (Console.ReadLine() == "exit")
@@ -45,13 +54,8 @@ namespace doubleAndBisectMultiplication
                     else if (isNumber)
                     {
                         Console.WriteLine("Diese Zahl ist leider betragsmaessig zu gross, mein Horizont geht nur von {0} bis {1}. " +
-                            "Probieren Sie es doch nochmal mit einer betragsmaessig kleineren Zahl.", Int32.MinValue+1, Int32.MaxValue);
+                            "\nProbieren Sie es doch nochmal mit einer betragsmaessig kleineren Zahl.", Int32.MinValue, Int32.MaxValue);
                     }
-                }
-                else if (number == Int32.MinValue)
-                {
-                    Console.WriteLine("Diese Zahl ist leider betragsmaessig zu gross, mein Horizont geht nur von {0} bis {1}. " +
-                        "Probieren Sie es doch nochmal mit einer betragsmaessig kleineren Zahl.", Int32.MinValue + 1, Int32.MaxValue);
                 }
                 else return number;
                 if (count == maxInputTrials - 1)
@@ -62,6 +66,15 @@ namespace doubleAndBisectMultiplication
 
         public static int Mul(int x, int y)
         {
+            if (x == 0 || y == 0)
+                return 0;
+            // MinValue is one bigger in his absolute value than MaxValue. Therefore, we cannot apply Math.Abs to MinValue.
+            if ((x == Int32.MinValue && y == 1) || (y == Int32.MinValue && x == 1))
+                return Int32.MinValue;
+            // Result out of bounds if MinValue multiplicated with anything other than 1 or 0.
+            if(x == Int32.MinValue || y == Int32.MinValue)
+                throw new Exception();
+            
             int absX = Math.Abs(x), absY = Math.Abs(y);
             int result = 0;
             int twos = 2, requiredArrayLength = 1;
@@ -70,25 +83,21 @@ namespace doubleAndBisectMultiplication
                 twos *= 2;
                 requiredArrayLength++;
             }
-            Console.WriteLine("{0}", requiredArrayLength);
             //Console.WriteLine("\na:         b:\n");
             int[] arrayX = new int[requiredArrayLength], arrayY = new int[requiredArrayLength];
             arrayX[0] = absX % 2;
             arrayY[0] = absY;
             for (int i = 1; i < requiredArrayLength; i++){
                 absY *= 2;
+                // Result out of bounds
                 if (absY < 0)
-                {
-                    Console.WriteLine("\nSorry, das Ergebnis ist zu gross, mein Horizont hoert bei {0} bzw. {1} auf... " +
-                        "Versuchen Sie es bitte nochmal mit kleineren Zahlen :-)\n", Int32.MinValue + 1, Int32.MaxValue);
-                    Main();
-                    return 0;
-                }
+                    throw new Exception();
+                
                 arrayY[i] = absY;
                 
                 absX /= 2;
                 arrayX[i] = absX % 2;
-                Console.WriteLine("{0}          {1}", arrayX[i], arrayY[i]);
+                //Console.WriteLine("{0}          {1}", arrayX[i], arrayY[i]);
             }
             for (int j = 0; j < requiredArrayLength; j++)
                 result += arrayX[j] * arrayY[j];
