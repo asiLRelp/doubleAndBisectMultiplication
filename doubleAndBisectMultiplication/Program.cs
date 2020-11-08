@@ -6,7 +6,7 @@ namespace doubleAndBisectMultiplication
 {
     public class Program
     {
-        public static int Main()
+        public static void Main()
         {
             Console.Write("Bitte geben Sie zwei ganze Zahlen ein, die multipliziert werden sollen und bestaetigen Sie jeweils mit Enter.\n");
             while (true)
@@ -14,101 +14,85 @@ namespace doubleAndBisectMultiplication
                 Console.Write("Zahl 1: ");
                 int? a = ReadNumber();
                 if (a == null)
-                    return 0;
+                    return;
                 Console.Write("Zahl 2: ");
                 int? b = ReadNumber();
                 if (b == null)
-                    return 0;
+                    return;
                 Console.WriteLine("\nDanke!\n\nDas Ergebnis der Multiplikation von {0} und {1} ist {2}\n", a, b, Mul((int)a, (int)b));
                 Console.WriteLine("\n Zum Beenden des Programms geben Sie bitte \"exit\" ein oder druecken Sie Strg+C.\n" +
                     "Um das Programm von vorne zu starten drücken Sie bitte Enter:\n");
                 if (Console.ReadLine() == "exit")
-                    return 0;
+                    return;
             }
         }
 
         private static int? ReadNumber()
         {
-            int a, i = 0;
-            bool number = true;
-            while (true)
+            // Exit Programm if maxInvalidInput invalid numbers were entered.
+            int maxInputTrials = 5;
+            for (int count = 0; count <= maxInputTrials; count++)
             {
+                Console.Write("\nBitte geben Sie eine ganze Zahl ein: ");
                 string input = Console.ReadLine();
-                Int32.TryParse(input, out a);
-                if (a == Int32.MinValue)
+                bool parsingWorked = Int32.TryParse(input, out int number);
+                if (!parsingWorked)
                 {
-                    Console.WriteLine("Diese Zahl ist leider betragsmaessig zu gross, mein Horizont geht nur von {0} bis {1}.\n" +
-                        "Probieren Sie es doch nochmal mit einer betragsmaessig kleineren Zahl.", Int32.MinValue + 1, Int32.MaxValue);
-                    Console.Write("Bitte geben Sie eine ganze Zahl ein: ");
-                }
-
-                else if (!Int32.TryParse(input, out a))
-                {
-                    i++;
-                    if (i == 5)
-                        return null;
-
                     char[] chars = input.ToCharArray();
-
-
-                    number = chars.Skip(1).All(c => char.IsNumber(c));
-                    
-                    if (chars.Length == 0)
+                    bool isNumber = chars.Length > 0 && chars.Skip(1).All(c => char.IsNumber(c)) && (char.IsNumber(chars[0]) || chars[0] == '-');
+                    if (!isNumber)
                         Console.WriteLine("Das war keine ganze Zahl.");
-
-                    else if (!number || (number && !char.IsNumber(chars[0])&& chars[0] != '-'))
+                    else if (isNumber)
                     {
-                        Console.WriteLine("Das war keine ganze Zahl.");
-                    }
-                    else if (number)
-                    {
-                        Console.WriteLine("Diese Zahl ist leider betragsmaessig zu gross, mein Horizont geht nur von {0} bis {1}.\n" +
+                        Console.WriteLine("Diese Zahl ist leider betragsmaessig zu gross, mein Horizont geht nur von {0} bis {1}. " +
                             "Probieren Sie es doch nochmal mit einer betragsmaessig kleineren Zahl.", Int32.MinValue+1, Int32.MaxValue);
                     }
-                    if (i == 4)
-                    {
-                        Console.WriteLine("Letzter Versuch, wenn Sie dieses Mal keine ganze Zahl innerhalb meines Horizonts eintippen wird das Programm beendet...");
-                    }
-                    Console.Write("Bitte geben Sie eine ganze Zahl ein: ");
                 }
-                else return a;
+                else if (number == Int32.MinValue)
+                {
+                    Console.WriteLine("Diese Zahl ist leider betragsmaessig zu gross, mein Horizont geht nur von {0} bis {1}. " +
+                        "Probieren Sie es doch nochmal mit einer betragsmaessig kleineren Zahl.", Int32.MinValue + 1, Int32.MaxValue);
+                }
+                else return number;
+                if (count == maxInputTrials - 1)
+                    Console.WriteLine("Letzter Versuch, wenn Sie dieses Mal keine ganze Zahl innerhalb meines Horizonts eintippen wird das Programm beendet...");
             }
+            return null;
         }
 
         public static int Mul(int x, int y)
         {
-            int a = Math.Abs(x), b = Math.Abs(y);
+            int absX = Math.Abs(x), absY = Math.Abs(y);
             int result = 0;
-            int twos = 2, i = 1;
-            while(a >= twos)
+            int twos = 2, requiredArrayLength = 1;
+            while(absX >= twos && twos > 0)
             {
                 twos *= 2;
-                if (twos < 0)
-                    break;
-                i++;
+                requiredArrayLength++;
             }
-            int[] arrayA = new int[i], arrayB = new int[i];
-            for (int j = 0; j < i; j++){
-                arrayA[j] = a % 2;
-                a /= 2;
-                arrayB[j] = b;
-                b *= 2;
-                if (b < 0)
-                {
-                    Console.WriteLine("\nSorry, das Ergebnis ist zu gross, mein Horizont hoert bei {0} bzw. {1} auf..." +
-                        "Versuchen Sie es bitte nochmal mit kleineren Zahlen :-)\n", Int32.MinValue+1, Int32.MaxValue);
-                    return Main();
-                }
-            }
-
+            Console.WriteLine("{0}", requiredArrayLength);
             //Console.WriteLine("\na:         b:\n");
-            for (int j = 0; j < i; j++)
-            {
-                Console.WriteLine("{0}          {1}", arrayA[j], arrayB[j]);
-                result += arrayA[j] * arrayB[j];
+            int[] arrayX = new int[requiredArrayLength], arrayY = new int[requiredArrayLength];
+            arrayX[0] = absX % 2;
+            arrayY[0] = absY;
+            for (int i = 1; i < requiredArrayLength; i++){
+                absY *= 2;
+                if (absY < 0)
+                {
+                    Console.WriteLine("\nSorry, das Ergebnis ist zu gross, mein Horizont hoert bei {0} bzw. {1} auf... " +
+                        "Versuchen Sie es bitte nochmal mit kleineren Zahlen :-)\n", Int32.MinValue + 1, Int32.MaxValue);
+                    Main();
+                    return 0;
+                }
+                arrayY[i] = absY;
+                
+                absX /= 2;
+                arrayX[i] = absX % 2;
+                Console.WriteLine("{0}          {1}", arrayX[i], arrayY[i]);
             }
-            //Console.WriteLine("\nFun fact: Die binaere Darstellung von {0} ist {1}.\n", Math.Abs(x), Convert.ToString(Math.Abs(x), 2));
-
+            for (int j = 0; j < requiredArrayLength; j++)
+                result += arrayX[j] * arrayY[j];
+            //Console.WriteLine("\nDie binaere Darstellung von {0} ist {1}.\n", Math.Abs(x), Convert.ToString(Math.Abs(x), 2));
             if ((x < 0) ^ (y < 0))
                 return -result;
             else
